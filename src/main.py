@@ -1,5 +1,6 @@
 from pyscript import document, window
 import js
+import asyncio
 from game_logic import OthelloGame
 
 game = None
@@ -70,8 +71,6 @@ def update_status():
     if not game.has_valid_move() and not game.is_game_over():
          status_text += " (パス！)"
     document.getElementById("status").innerText = status_text
-
-import asyncio
 
 async def handle_click(r, c):
     """セルクリック時の処理"""
@@ -203,6 +202,15 @@ def on_toggle_hints(event):
     # ヒント計算は少し重い可能性があるので、非同期でUIブロックを避ける工夫ができれば良いが、
     # 簡易実装としてそのまま呼び出す（depth=3なら一瞬のはず）
     render_board()
+
+def on_new_game(event):
+    """新規ゲーム開始"""
+    init_game()
+
+def on_undo(event):
+    """1手戻す"""
+    if game.undo():
+        render_board()
 
 async def on_player_color_change(event):
     """プレイヤーの色変更時、AIの手番になる可能性があるためチェック"""
