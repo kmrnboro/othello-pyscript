@@ -153,11 +153,9 @@ def update_status_ai_thinking():
 
 def highlight_valid_moves():
     """有効手のハイライト処理"""
-    # チェックボックスの状態を確認
-    show_black = document.getElementById("show-hints-black").checked
-    show_white = document.getElementById("show-hints-white").checked
-    show_best_black = document.getElementById("show-best-move-black").checked
-    show_best_white = document.getElementById("show-best-move-white").checked
+    # ドロップダウンの状態を確認
+    hint_black = document.getElementById("hint-black").value
+    hint_white = document.getElementById("hint-white").value
 
     current_turn = game.current_turn
     
@@ -166,11 +164,15 @@ def highlight_valid_moves():
     show_best = False
     
     if current_turn == OthelloGame.BLACK:
-        if show_black: show_valid = True
-        if show_best_black: show_best = True
+        if hint_black in ["hints", "best"]:
+            show_valid = True
+        if hint_black == "best":
+            show_best = True
     elif current_turn == OthelloGame.WHITE:
-        if show_white: show_valid = True
-        if show_best_white: show_best = True
+        if hint_white in ["hints", "best"]:
+            show_valid = True
+        if hint_white == "best":
+            show_best = True
 
     moves = []
     if show_valid or show_best:
@@ -222,8 +224,6 @@ init_game()
 from pyodide.ffi.wrappers import add_event_listener
 add_event_listener(document.getElementById("new-game-btn"), "click", on_new_game)
 add_event_listener(document.getElementById("undo-btn"), "click", on_undo)
-add_event_listener(document.getElementById("show-hints-black"), "change", on_toggle_hints)
-add_event_listener(document.getElementById("show-hints-white"), "change", on_toggle_hints)
-add_event_listener(document.getElementById("show-best-move-black"), "change", on_toggle_hints)
-add_event_listener(document.getElementById("show-best-move-white"), "change", on_toggle_hints)
+add_event_listener(document.getElementById("hint-black"), "change", on_toggle_hints)
+add_event_listener(document.getElementById("hint-white"), "change", on_toggle_hints)
 add_event_listener(document.getElementById("player-color"), "change", on_player_color_change)

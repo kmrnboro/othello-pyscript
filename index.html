@@ -44,20 +44,21 @@
             </div>
 
             <div class="options">
-                <label>
-                    <input type="checkbox" id="show-hints-black"> ヒント表示 (黒)
-                </label>
-                <label>
-                    <input type="checkbox" id="show-hints-white"> ヒント表示 (白)
-                </label>
+                <label for="hint-black">ヒント (黒):</label>
+                <select id="hint-black">
+                    <option value="none">なし</option>
+                    <option value="hints">ヒントのみ</option>
+                    <option value="best">ヒント+最善手</option>
+                </select>
             </div>
+
             <div class="options">
-                <label>
-                    <input type="checkbox" id="show-best-move-black"> 最善手 (黒)
-                </label>
-                <label>
-                    <input type="checkbox" id="show-best-move-white"> 最善手 (白)
-                </label>
+                <label for="hint-white">ヒント (白):</label>
+                <select id="hint-white">
+                    <option value="none">なし</option>
+                    <option value="hints">ヒントのみ</option>
+                    <option value="best">ヒント+最善手</option>
+                </select>
             </div>
         </div>
 
