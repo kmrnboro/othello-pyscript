@@ -10,6 +10,7 @@ def init_game():
     game = OthelloGame()
     js.console.log("Game Initialized", game.get_counts())
     render_board()
+    asyncio.create_task(check_game_state_and_continue())
 
 def render_board():
     """HTML盤面の描画更新"""
@@ -56,13 +57,18 @@ def render_board():
     update_status()
     highlight_valid_moves()
 
+def get_ai_color():
+    """AIの色を取得（プレイヤーの逆）"""
+    player_color = document.getElementById("player-color").value
+    return OthelloGame.WHITE if player_color == "black" else OthelloGame.BLACK
+
 def update_status():
     """ステータス表示更新"""
-    current = "Black" if game.current_turn == OthelloGame.BLACK else "White"
+    current = "黒" if game.current_turn == OthelloGame.BLACK else "白"
     black, white = game.get_counts()
-    status_text = f"Turn: {current} | Black: {black} | White: {white}"
+    status_text = f"手番: {current} | 黒: {black} | 白: {white}"
     if not game.has_valid_move() and not game.is_game_over():
-         status_text += " (PASS!)"
+         status_text += " (パス！)"
     document.getElementById("status").innerText = status_text
 
 import asyncio
@@ -74,7 +80,7 @@ async def handle_click(r, c):
 
     # AIの手番中は操作無効
     ai_level = document.getElementById("ai-level").value
-    if ai_level != "none" and game.current_turn == OthelloGame.WHITE:
+    if ai_level != "none" and game.current_turn == get_ai_color():
         return
 
     if game.apply_move(r, c):
@@ -104,7 +110,7 @@ async def check_game_state_and_continue():
 
     # AIのターンかチェック
     ai_level = document.getElementById("ai-level").value
-    if ai_level != "none" and game.current_turn == OthelloGame.WHITE:
+    if ai_level != "none" and game.current_turn == get_ai_color():
         await process_ai_turn(ai_level)
 
 async def process_ai_turn(level):
@@ -117,6 +123,9 @@ async def process_ai_turn(level):
         move = game.get_random_move()
     elif level == "greedy":
         move = game.get_greedy_move()
+    elif level == "hard":
+        # 本番の思考は少し深めにしても良いが、ブラウザでの動作を考慮して3か4
+        move = game.get_minimax_move(depth=3)
     
     if move:
         r, c = move
@@ -124,17 +133,24 @@ async def process_ai_turn(level):
         render_board()
         await check_game_state_and_continue()
     else:
-        # AIも打つ手がない場合（has_valid_moveでチェック済みなので到達しないはずだが念のため）
-        pass
+        # AIパス
+        game.switch_turn()
+        update_status()
+        await check_game_state_and_continue()
 
 def show_game_over():
     black, white = game.get_counts()
-    winner = "Black" if black > white else "White" if white > black else "Draw"
-    document.getElementById("status").innerText = f"Game Over! Winner: {winner} (B:{black} - W:{white})"
+    winner_text = "引き分け"
+    if black > white:
+        winner_text = "黒"
+    elif white > black:
+        winner_text = "白"
+    
+    document.getElementById("status").innerText = f"対局終了！ 勝者: {winner_text} (黒:{black} - 白:{white})"
 
 def update_status_ai_thinking():
     black, white = game.get_counts()
-    document.getElementById("status").innerText = f"AI is thinking... | B:{black} - W:{white}"
+    document.getElementById("status").innerText = f"AI思考中... | 黒:{black} - 白:{white}"
 
 def highlight_valid_moves():
     """有効手のハイライト処理"""
@@ -188,33 +204,18 @@ def on_toggle_hints(event):
     # 簡易実装としてそのまま呼び出す（depth=3なら一瞬のはず）
     render_board()
 
-async def process_ai_turn():
-    """AIの手番処理"""
-    ai_level = document.getElementById("ai-level").value
-    if ai_level == "none":
-        return
-
-    # 少しウェイトを入れる（思考している感）
-    await asyncio.sleep(0.5)
-    
-    move = None
-    if ai_level == "random":
-        move = game.get_random_move()
-    elif ai_level == "greedy":
-        move = game.get_greedy_move()
-    elif ai_level == "hard":
-        # 本番の思考は少し深めにしても良いが、ブラウザでの動作を考慮して3か4
-        move = game.get_minimax_move(depth=3)
-    
-    if move:
-        r, c = move
-        game.apply_move(r, c)
-        render_board()
-        await check_game_state_and_continue()
-    else:
-        # AIパス
-        game.switch_turn()
-        update_status()
-        await check_game_state_and_continue()
+async def on_player_color_change(event):
+    """プレイヤーの色変更時、AIの手番になる可能性があるためチェック"""
+    await check_game_state_and_continue()
 
 init_game()
+
+# イベントリスナーの設定
+from pyodide.ffi.wrappers import add_event_listener
+add_event_listener(document.getElementById("new-game-btn"), "click", on_new_game)
+add_event_listener(document.getElementById("undo-btn"), "click", on_undo)
+add_event_listener(document.getElementById("show-hints-black"), "change", on_toggle_hints)
+add_event_listener(document.getElementById("show-hints-white"), "change", on_toggle_hints)
+add_event_listener(document.getElementById("show-best-move-black"), "change", on_toggle_hints)
+add_event_listener(document.getElementById("show-best-move-white"), "change", on_toggle_hints)
+add_event_listener(document.getElementById("player-color"), "change", on_player_color_change)

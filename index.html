@@ -13,8 +13,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>Othello</h1>
-            <div id="status">Player 1's Turn</div>
+            <h1>オセロ (Othello)</h1>
+            <div id="status">黒の番です</div>
         </header>
 
         <div id="game-board" class="board">
@@ -22,32 +22,42 @@
         </div>
 
         <div class="controls">
-            <button id="new-game-btn">New Game</button>
-            <button id="undo-btn">Undo</button>
+            <button id="new-game-btn">新規ゲーム (New Game)</button>
+            <button id="undo-btn">待った (Undo)</button>
+
             <div class="options">
-                <label>
-                    <input type="checkbox" id="show-hints-black"> Show Hints (Black)
-                </label>
-                <label>
-                    <input type="checkbox" id="show-hints-white"> Show Hints (White)
-                </label>
-            </div>
-            <div class="options">
-                <label>
-                    <input type="checkbox" id="show-best-move-black"> Show Best (Black)
-                </label>
-                <label>
-                    <input type="checkbox" id="show-best-move-white"> Show Best (White)
-                </label>
-            </div>
-            <div class="options">
-                <label for="ai-level">AI Level:</label>
-                <select id="ai-level">
-                    <option value="none">PvP (2 Players)</option>
-                    <option value="random">Easy (Random)</option>
-                    <option value="greedy">Medium (Greedy)</option>
-                    <option value="hard">Hard (Strategic)</option>
+                <label for="player-color">プレイヤー (Player):</label>
+                <select id="player-color">
+                    <option value="black">先手 (黒)</option>
+                    <option value="white">後手 (白)</option>
                 </select>
+            </div>
+
+            <div class="options">
+                <label for="ai-level">AIレベル (Level):</label>
+                <select id="ai-level">
+                    <option value="none">なし (対人戦)</option>
+                    <option value="random">初級 (ランダム)</option>
+                    <option value="greedy">中級 (貪欲法)</option>
+                    <option value="hard">上級 (Minimax)</option>
+                </select>
+            </div>
+
+            <div class="options">
+                <label>
+                    <input type="checkbox" id="show-hints-black"> ヒント表示 (黒)
+                </label>
+                <label>
+                    <input type="checkbox" id="show-hints-white"> ヒント表示 (白)
+                </label>
+            </div>
+            <div class="options">
+                <label>
+                    <input type="checkbox" id="show-best-move-black"> 最善手 (黒)
+                </label>
+                <label>
+                    <input type="checkbox" id="show-best-move-white"> 最善手 (白)
+                </label>
             </div>
         </div>
 
