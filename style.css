@@ -1,0 +1,160 @@
+:root {
+    --bg-color: #2c3e50;
+    --board-color: #27ae60;
+    --border-color: #1e8449;
+    --text-color: #ecf0f1;
+    --cell-size: 40px;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    touch-action: manipulation;
+    /* Prevent double-tap zoom */
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 600px;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 2em;
+}
+
+#status {
+    margin-top: 10px;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    gap: 2px;
+    background-color: var(--border-color);
+    border: 5px solid var(--border-color);
+    width: 90vmin;
+    max-width: 400px;
+    height: 90vmin;
+    max-height: 400px;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.cell {
+    background-color: var(--board-color);
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.piece {
+    width: 80%;
+    height: 80%;
+    border-radius: 50%;
+    display: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+.cell.black .piece {
+    display: block;
+    background-color: black;
+    transform: rotateY(0deg);
+}
+
+.cell.white .piece {
+    display: block;
+    background-color: white;
+    transform: rotateY(180deg);
+}
+
+/* アニメーション用クラス - JSでクラスを切り替えることで回転させる */
+/* 修正: シンプルに色が変わるだけだと回転感が出ないので、
+   black -> white の時に回転させる。
+   しかし、Othelloの駒は裏表なので、回転して色が変わるのが自然。
+   ここでは transform: rotateY(180deg) をWhiteの状態とする。
+*/
+
+
+.cell.valid-move::after {
+    content: '';
+    width: 20%;
+    height: 20%;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 50%;
+}
+
+.cell.best-move::after {
+    background-color: rgba(255, 215, 0, 0.6);
+    /* Gold color for best move */
+    width: 30%;
+    height: 30%;
+    box-shadow: 0 0 5px rgba(255, 215, 0, 0.8);
+}
+
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 1em;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #3498db;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+.options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px;
+    border-radius: 5px;
+}
+
+select {
+    padding: 5px;
+    border-radius: 3px;
+}
+
+/* Responsive adjustments */
+@media (min-width: 600px) {
+    .board {
+        width: 400px;
+        height: 400px;
+    }
+}

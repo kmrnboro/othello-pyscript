@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Othello Web App</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css" />
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Othello</h1>
+            <div id="status">Player 1's Turn</div>
+        </header>
+
+        <div id="game-board" class="board">
+            <!-- Board cells will be generated here -->
+        </div>
+
+        <div class="controls">
+            <button id="new-game-btn">New Game</button>
+            <button id="undo-btn">Undo</button>
+            <div class="options">
+                <label>
+                    <input type="checkbox" id="show-hints-black"> Show Hints (Black)
+                </label>
+                <label>
+                    <input type="checkbox" id="show-hints-white"> Show Hints (White)
+                </label>
+            </div>
+            <div class="options">
+                <label>
+                    <input type="checkbox" id="show-best-move-black"> Show Best (Black)
+                </label>
+                <label>
+                    <input type="checkbox" id="show-best-move-white"> Show Best (White)
+                </label>
+            </div>
+            <div class="options">
+                <label for="ai-level">AI Level:</label>
+                <select id="ai-level">
+                    <option value="none">PvP (2 Players)</option>
+                    <option value="random">Random AI</option>
+                    <option value="greedy">Greedy AI</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="log"></div>
+    </div>
+
+    <script type="py" src="./src/main.py" config="./pyscript.json"></script>
+</body>
+
+</html>
