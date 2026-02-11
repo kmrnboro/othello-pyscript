@@ -142,29 +142,141 @@ class OthelloGame:
         return None
 
     def get_greedy_move(self):
-        """最も多く取れる手を返す"""
-        import copy
-        moves = self.get_valid_moves(self.current_turn)
-        if not moves:
+        """貪欲法：最も多く石を裏返せる手を選ぶ"""
+        valid_moves = self.get_valid_moves(self.current_turn)
+        if not valid_moves:
             return None
         
         best_move = None
-        max_flipped = -1
+        max_flips = -1
         
-        for r, c in moves:
-            # シミュレーション
-            # apply_moveは盤面を変えてしまうので、カウントだけ計算するロジックが必要だが、
-            # 既存のロジックを再利用するために一時的にコピーするか、
-            # _get_flips のようなヘルパーメソッドがあれば良い。
-            # ここでは簡易的に deepcopy を使う（パフォーマンスは落ちるが実装は楽）
-            
-            # または apply_move のロジックの一部（ひっくり返る数の計算）を切り出す
-            flipped_count = self.count_flips(r, c)
-            if flipped_count > max_flipped:
-                max_flipped = flipped_count
+        for r, c in valid_moves:
+            flips = self.count_flips(r, c)
+            if flips > max_flips:
+                max_flips = flips
                 best_move = (r, c)
                 
         return best_move
+
+    def evaluate_board(self, board, player):
+        """盤面評価関数"""
+        opponent = self.BLACK if player == self.WHITE else self.WHITE
+        
+        # 1. 石の数（終盤は重要だが、序中盤はそうでもない）
+        player_score = sum(row.count(player) for row in board)
+        opponent_score = sum(row.count(opponent) for row in board)
+        
+        # 2. 確定石の数（簡易的に角のみ）
+        corners = [(0, 0), (0, 7), (7, 0), (7, 7)]
+        player_corners = sum(1 for r, c in corners if board[r][c] == player)
+        opponent_corners = sum(1 for r, c in corners if board[r][c] == opponent)
+        
+        # 3. 配置（重み付け）
+        # 簡易的な重み付け
+        weights = [
+            [100, -20, 10, 5, 5, 10, -20, 100],
+            [-20, -50, -2, -2, -2, -2, -50, -20],
+            [10, -2, -1, -1, -1, -1, -2, 10],
+            [5, -2, -1, -1, -1, -1, -2, 5],
+            [5, -2, -1, -1, -1, -1, -2, 5],
+            [10, -2, -1, -1, -1, -1, -2, 10],
+            [-20, -50, -2, -2, -2, -2, -50, -20],
+            [100, -20, 10, 5, 5, 10, -20, 100],
+        ]
+        
+        position_score = 0
+        for r in range(8):
+            for c in range(8):
+                if board[r][c] == player:
+                    position_score += weights[r][c]
+                elif board[r][c] == opponent:
+                    position_score -= weights[r][c]
+
+        # 総合評価（重みは調整が必要）
+        score = (player_score - opponent_score) + (player_corners - opponent_corners) * 1000 + position_score
+        return score
+
+    def get_minimax_move(self, depth=3):
+        """Minimax法（Alpha-Beta法）で手を選ぶ"""
+        best_score = float('-inf')
+        best_move = None
+        alpha = float('-inf')
+        beta = float('inf')
+        
+        valid_moves = self.get_valid_moves(self.current_turn)
+        if not valid_moves:
+            return None
+            
+        # 最初に中央付近や角を優先探索するとAlpha-Beta効率が良いが、今回は単純に探索
+        for r, c in valid_moves:
+            # 仮想的な盤面を作成して一手進める
+            # copy.deepcopyは遅いので、手動でコピーするか、リスト内包表記を使う
+            temp_game = OthelloGame() 
+            temp_game.board = [row[:] for row in self.board]
+            temp_game.current_turn = self.current_turn
+            temp_game.apply_move(r, c) # 手番も変わる
+            
+            # 再帰呼び出し
+            # apply_moveで手番が変わっているため、minimaxの呼び出しでは
+            # is_maximizing=False (相手のターンなので最小化) となるべきだが、
+            # minimax内で「現在の手番」を基準に評価するか、「最大化プレイヤー」を基準に評価するかによる。
+            # ここでは minimax(..., maximizing_player=self.current_turn) を渡す。
+            # 次の層は相手番なので is_maximizing=False
+            score = self.minimax(temp_game, depth - 1, alpha, beta, False, self.current_turn)
+            
+            if score > best_score:
+                best_score = score
+                best_move = (r, c)
+            
+            alpha = max(alpha, best_score)
+            
+        return best_move
+
+    def minimax(self, game_state, depth, alpha, beta, is_maximizing, maximizing_player):
+        if depth == 0 or game_state.is_game_over():
+            return self.evaluate_board(game_state.board, maximizing_player)
+
+        valid_moves = game_state.get_valid_moves(game_state.current_turn)
+        
+        # パスの場合
+        if not valid_moves:
+            temp_game = OthelloGame()
+            temp_game.board = [row[:] for row in game_state.board]
+            temp_game.current_turn = game_state.current_turn
+            # パスさせる（手番交代のみ）
+            temp_game.switch_turn()
+            # 手番交代したので、is_maximizingを反転させる？
+            # いや、パスは「手が選べない」だけなので、最大化/最小化の役割は交代する
+            return self.minimax(temp_game, depth - 1, alpha, beta, not is_maximizing, maximizing_player)
+
+        if is_maximizing:
+            max_eval = float('-inf')
+            for r, c in valid_moves:
+                temp_game = OthelloGame()
+                temp_game.board = [row[:] for row in game_state.board]
+                temp_game.current_turn = game_state.current_turn
+                temp_game.apply_move(r, c)
+                
+                eval = self.minimax(temp_game, depth - 1, alpha, beta, False, maximizing_player)
+                max_eval = max(max_eval, eval)
+                alpha = max(alpha, eval)
+                if beta <= alpha:
+                    break
+            return max_eval
+        else:
+            min_eval = float('inf')
+            for r, c in valid_moves:
+                temp_game = OthelloGame()
+                temp_game.board = [row[:] for row in game_state.board]
+                temp_game.current_turn = game_state.current_turn
+                temp_game.apply_move(r, c)
+                
+                eval = self.minimax(temp_game, depth - 1, alpha, beta, True, maximizing_player)
+                min_eval = min(min_eval, eval)
+                beta = min(beta, eval)
+                if beta <= alpha:
+                    break
+            return min_eval
 
     def count_flips(self, r, c):
         """指定した位置に置いた場合にひっくり返る数を計算"""

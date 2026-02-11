@@ -163,10 +163,11 @@ def highlight_valid_moves():
 
     cells = document.querySelectorAll(".cell")
     
-    # ベストムーブの計算（Greedy）
+    # ベストムーブの計算（Greedy -> Minimax）
     best_move = None
     if show_best:
-        best_move = game.get_greedy_move()
+        # ヒント用は深さを浅くしてレスポンス優先（それでも3あれば十分強い）
+        best_move = game.get_minimax_move(depth=3)
 
     for i in range(len(cells)):
         r = int(cells[i].dataset.row)
@@ -183,22 +184,37 @@ def highlight_valid_moves():
                 cells[i].classList.add("best-move")
 
 def on_toggle_hints(event):
+    # ヒント計算は少し重い可能性があるので、非同期でUIブロックを避ける工夫ができれば良いが、
+    # 簡易実装としてそのまま呼び出す（depth=3なら一瞬のはず）
     render_board()
 
-def on_new_game(event):
-    init_game()
+async def process_ai_turn():
+    """AIの手番処理"""
+    ai_level = document.getElementById("ai-level").value
+    if ai_level == "none":
+        return
 
-def on_undo(event):
-    if game.undo():
+    # 少しウェイトを入れる（思考している感）
+    await asyncio.sleep(0.5)
+    
+    move = None
+    if ai_level == "random":
+        move = game.get_random_move()
+    elif ai_level == "greedy":
+        move = game.get_greedy_move()
+    elif ai_level == "hard":
+        # 本番の思考は少し深めにしても良いが、ブラウザでの動作を考慮して3か4
+        move = game.get_minimax_move(depth=3)
+    
+    if move:
+        r, c = move
+        game.apply_move(r, c)
         render_board()
-
-# イベントリスナーの設定
-from pyodide.ffi.wrappers import add_event_listener
-add_event_listener(document.getElementById("new-game-btn"), "click", on_new_game)
-add_event_listener(document.getElementById("undo-btn"), "click", on_undo)
-add_event_listener(document.getElementById("show-hints-black"), "change", on_toggle_hints)
-add_event_listener(document.getElementById("show-hints-white"), "change", on_toggle_hints)
-add_event_listener(document.getElementById("show-best-move-black"), "change", on_toggle_hints)
-add_event_listener(document.getElementById("show-best-move-white"), "change", on_toggle_hints)
+        await check_game_state_and_continue()
+    else:
+        # AIパス
+        game.switch_turn()
+        update_status()
+        await check_game_state_and_continue()
 
 init_game()
