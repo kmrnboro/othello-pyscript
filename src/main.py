@@ -65,9 +65,9 @@ def get_ai_color():
 
 def update_status():
     """ステータス表示更新"""
-    current = "黒" if game.current_turn == OthelloGame.BLACK else "白"
+    current = "くろ" if game.current_turn == OthelloGame.BLACK else "しろ"
     black, white = game.get_counts()
-    status_text = f"手番: {current} | 黒: {black} | 白: {white}"
+    status_text = f"じゅんばん: {current} | くろ: {black} | しろ: {white}"
     if not game.has_valid_move() and not game.is_game_over():
          status_text += " (パス！)"
     document.getElementById("status").innerText = status_text
@@ -139,17 +139,17 @@ async def process_ai_turn(level):
 
 def show_game_over():
     black, white = game.get_counts()
-    winner_text = "引き分け"
+    winner_text = "ひきわけ"
     if black > white:
-        winner_text = "黒"
+        winner_text = "くろ"
     elif white > black:
-        winner_text = "白"
+        winner_text = "しろ"
     
-    document.getElementById("status").innerText = f"対局終了！ 勝者: {winner_text} (黒:{black} - 白:{white})"
+    document.getElementById("status").innerText = f"対局終了！ {winner_text}のかち！ (くろ:{black} - しろ:{white})"
 
 def update_status_ai_thinking():
     black, white = game.get_counts()
-    document.getElementById("status").innerText = f"AI思考中... | 黒:{black} - 白:{white}"
+    document.getElementById("status").innerText = f"AI思考中... | くろ:{black} - しろ:{white}"
 
 def highlight_valid_moves():
     """有効手のハイライト処理"""
