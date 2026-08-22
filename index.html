@@ -1,40 +1,11 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Othello Web App</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://pyscript.net/releases/2026.7.2/core.css" />
-
-    <script>
-        window.othelloPyStarted = false;
-        window.addEventListener("error", (event) => {
-            const status = document.getElementById("status");
-            if (status && !window.othelloPyStarted) {
-                status.textContent = "起動エラー(JS): " + (event.message || "外部スクリプトを読み込めません");
-            }
-        });
-
-        window.addEventListener("DOMContentLoaded", () => {
-            const status = document.getElementById("status");
-            if (status) status.textContent = "PyScriptを読み込み中...";
-
-            setTimeout(() => {
-                if (!window.othelloPyStarted && status) {
-                    status.textContent = "PyScriptが起動していません。Safariで開くか、ページを再読み込みしてください。";
-                }
-            }, 10000);
-        });
-    </script>
-
-    <script type="module"
-            src="https://pyscript.net/releases/2026.7.2/core.js"
-            onerror="document.getElementById('status').textContent='起動エラー: PyScript core.js の読み込みに失敗しました';">
-    </script>
 </head>
-
 <body>
     <div class="container">
         <header>
@@ -42,9 +13,7 @@
             <div id="status">起動準備中...</div>
         </header>
 
-        <div id="game-board" class="board">
-            <!-- Board cells will be generated here -->
-        </div>
+        <div id="game-board" class="board" aria-label="オセロ盤"></div>
 
         <div class="controls">
             <button id="new-game-btn">あたらしいゲーム (New Game)</button>
@@ -86,11 +55,8 @@
                 </select>
             </div>
         </div>
-
-        <div id="log"></div>
     </div>
 
-    <script type="py" src="./src/main.py" config="./pyscript.json"></script>
+    <script src="./app.js"></script>
 </body>
-
 </html>
