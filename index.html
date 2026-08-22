@@ -7,14 +7,39 @@
     <title>Othello Web App</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://pyscript.net/releases/2026.7.2/core.css" />
-    <script type="module" src="https://pyscript.net/releases/2026.7.2/core.js"></script>
+
+    <script>
+        window.othelloPyStarted = false;
+        window.addEventListener("error", (event) => {
+            const status = document.getElementById("status");
+            if (status && !window.othelloPyStarted) {
+                status.textContent = "起動エラー(JS): " + (event.message || "外部スクリプトを読み込めません");
+            }
+        });
+
+        window.addEventListener("DOMContentLoaded", () => {
+            const status = document.getElementById("status");
+            if (status) status.textContent = "PyScriptを読み込み中...";
+
+            setTimeout(() => {
+                if (!window.othelloPyStarted && status) {
+                    status.textContent = "PyScriptが起動していません。Safariで開くか、ページを再読み込みしてください。";
+                }
+            }, 10000);
+        });
+    </script>
+
+    <script type="module"
+            src="https://pyscript.net/releases/2026.7.2/core.js"
+            onerror="document.getElementById('status').textContent='起動エラー: PyScript core.js の読み込みに失敗しました';">
+    </script>
 </head>
 
 <body>
     <div class="container">
         <header>
             <h1>オセロ (Othello)</h1>
-            <div id="status">くろのばんです</div>
+            <div id="status">起動準備中...</div>
         </header>
 
         <div id="game-board" class="board">
